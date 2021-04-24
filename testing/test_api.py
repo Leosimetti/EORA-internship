@@ -78,6 +78,61 @@ class TestConnection(asynctest.TestCase):
         db_connection.close()
 
 
+class TestBots(unittest.TestCase):
+    from app.db import db
+
+    token = ""
+
+    def setUp(self) -> None:
+        self.db.command("dropDatabase")
+        client.post("/auth/register",
+                    json={
+                        "email": "user@example.com",
+                        "password": "string",
+                    })
+
+        response = client.post("/auth/jwt/login",
+                               data={
+                                   "username": "user@example.com",
+                                   "password": "string",
+                                   "grant_type": "",
+                                   "scope": "",
+                                   "client_id": "",
+                                   "client_secret": ""
+                               })
+        self.token = response.json()["access_token"]
+
+    def test_add_one(self):
+        response = client.post("/add-bot",
+                               headers={"Authorization": f"Bearer {self.token}"},
+                               json={"name": "CoolBot", "token": "1466"})
+        assert response.status_code == 201
+
+    def test_duplicate(self):
+        client.post("/add-bot",
+                    headers={"Authorization": f"Bearer {self.token}"},
+                    json={"name": "sas", "token": "1466"})
+        response = client.post("/add-bot",
+                               headers={"Authorization": f"Bearer {self.token}"},
+                               json={"name": "sas", "token": "1466"})
+        assert response.status_code == 409
+
+    def test_more_than_five(self):
+        for i in range(5):
+            response = client.post("/add-bot",
+                                   headers={"Authorization": f"Bearer {self.token}"},
+                                   json={"name": f"sas{i}", "token": f"1466{i}"})
+            assert response.status_code == 201
+
+        response = client.post("/add-bot",
+                               headers={"Authorization": f"Bearer {self.token}"},
+                               json={"name": "boba", "token": "1222"})
+        assert response.status_code == 403
+
+    def tearDown(self) -> None:
+        self.db.command("dropDatabase")
+
+
 class TestRegistration(unittest.TestCase):
     from app.db import db
 

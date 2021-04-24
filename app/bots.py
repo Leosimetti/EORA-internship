@@ -5,17 +5,20 @@ from .models import Bot
 
 router = APIRouter(tags=["bots"])
 
+
 @router.post("/add-bot", status_code=status.HTTP_201_CREATED,
              responses={
+                 403: {"description": "You already have more than 5 bots"},
+                 409: {"description": "The requested bot already exists"}
              })
 async def add_bot(bot: Bot, user: UserDB = Depends(fastapi_users.current_user(active=True))):
     bot_list = user.bots
-    bot_list = list(map(lambda x: dict(x), bot_list))
 
     if len(bot_list) < 5:
         if bot in bot_list:
-            raise HTTPException(status_code=403, detail="The requested bot already exists")
+            raise HTTPException(status_code=409, detail="The requested bot already exists")
         else:
+            bot_list = list(map(lambda x: dict(x), bot_list))
             bot_list.append(dict(bot))
             await user_db.update_one(
                 {"id": user.id},

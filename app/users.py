@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request
 from fastapi_users import FastAPIUsers, models
 from pydantic import BaseConfig
-# from fastapi_users.authentication import JWTAuthentication
+from fastapi_users.authentication import JWTAuthentication
 from fastapi_users.db import MongoDBUserDatabase
 from fastapi_users.authentication import CookieAuthentication
 from typing import List
@@ -40,17 +40,12 @@ user_db = MongoDBUserDatabase(UserDB, db["users"])
 
 
 async def on_after_register(user: UserDB, request: Request):
-    # from .db import db
-    # review_db = db["userTokens"]
-    # user_db = review_db[str(user.id)]
-    # await user_db.create_index("token_id", unique=True)
-    # await user_db.create_index([("review_date",1)])
     print(f"User {user.id} has been registered.")
 
 
-# jwt_authentication = JWTAuthentication(
-#     secret=SECRET, lifetime_seconds=3600, tokenUrl="/auth/jwt/login"
-# )
+jwt_authentication = JWTAuthentication(
+    secret=SECRET, lifetime_seconds=3600, tokenUrl="/auth/jwt/login"
+)
 cookie_authentication = CookieAuthentication(
     secret=SECRET, lifetime_seconds=3600, cookie_name="EORA-cookie"
 )
@@ -58,15 +53,15 @@ cookie_authentication = CookieAuthentication(
 router = APIRouter()
 fastapi_users = FastAPIUsers(
     user_db,
-    [cookie_authentication],  # [jwt_authentication, cookie_authentication],
+    [jwt_authentication, cookie_authentication],
     User,
     UserCreate,
     UserUpdate,
     UserDB,
 )
-# router.include_router(
-#     fastapi_users.get_auth_router(jwt_authentication), prefix="/auth/jwt", tags=["auth"]
-# )
+router.include_router(
+    fastapi_users.get_auth_router(jwt_authentication), prefix="/auth/jwt", tags=["auth"]
+)
 router.include_router(
     fastapi_users.get_auth_router(cookie_authentication), prefix="/auth/cookie", tags=["auth"]
 )

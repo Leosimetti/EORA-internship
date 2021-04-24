@@ -2,8 +2,6 @@ FROM python:3.8
 
 COPY ./requirements.txt /
 COPY ./app /app/
-COPY ./scrapper /scrapper/
-COPY ./srs /srs/
 COPY ./main.py /
 RUN pip install -r requirements.txt
 

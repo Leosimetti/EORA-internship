@@ -2,4 +2,4 @@ import uvicorn
 import os
 
 if __name__ == "__main__":
-    uvicorn.run("app.app:app", host=os.getenv("HOST_IP", "127.0.0.1"), port=5000)
+    uvicorn.run("app.app:app", host=os.getenv("HOST_IP", "0.0.0.0"), port=80)

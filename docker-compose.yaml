@@ -3,7 +3,7 @@ services:
   backend:
     build:
       context: .
-      dockerfile: DockerFile
+      dockerfile: Dockerfile
     container_name: backend
     environment:
       DB_HOST: "mongo"

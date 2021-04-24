@@ -82,6 +82,7 @@ class TestBots(unittest.TestCase):
     from app.db import db
 
     token = ""
+    add_endpoint = "/add-bot"
 
     def setUp(self) -> None:
         self.db.command("dropDatabase")
@@ -103,15 +104,15 @@ class TestBots(unittest.TestCase):
         self.token = response.json()["access_token"]
 
     def test_add_one(self):
-        response = client.post("/add-bot",
+        response = client.post(self.add_endpoint,
                                headers={"Authorization": f"Bearer {self.token}"},
                                json={"name": "CoolBot", "token": "1466"})
         assert response.status_code == 201
 
     def test_duplicate(self):
-        client.post("/add-bot",
+        client.post(self.add_endpoint,
                     headers={"Authorization": f"Bearer {self.token}"},
-                    json={"name": "sas", "token": "1466"})
+                    json={"name": "bot", "token": "1466"})
         response = client.post("/add-bot",
                                headers={"Authorization": f"Bearer {self.token}"},
                                json={"name": "sas", "token": "1466"})
@@ -119,14 +120,14 @@ class TestBots(unittest.TestCase):
 
     def test_more_than_five(self):
         for i in range(5):
-            response = client.post("/add-bot",
+            response = client.post(self.add_endpoint,
                                    headers={"Authorization": f"Bearer {self.token}"},
-                                   json={"name": f"sas{i}", "token": f"1466{i}"})
+                                   json={"name": f"{i}", "token": f"{i}"})
             assert response.status_code == 201
 
-        response = client.post("/add-bot",
+        response = client.post(self.add_endpoint,
                                headers={"Authorization": f"Bearer {self.token}"},
-                               json={"name": "boba", "token": "1222"})
+                               json={"name": "aboba", "token": "1222"})
         assert response.status_code == 403
 
     def tearDown(self) -> None:

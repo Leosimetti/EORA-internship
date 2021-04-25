@@ -52,16 +52,16 @@ class MongoModel(BaseModel):
 
 
 class Bot(MongoModel):
-    name: str
+    label: str
     token: str
 
-    @validator('name')
+    @validator('label')
     def name_must_be_sufficient_length(cls, v):
-        if len(v) < 5:
-            raise ValueError('Name too short')
-        elif len(v) > 35:
-            raise ValueError("Name to long")
-        return v.lower()
+        if len(v) < 2:
+            raise ValueError('Label too short')
+        elif len(v) > 55:
+            raise ValueError("Label to long")
+        return v
 
     @validator('token')
     def token_must_be_valid(cls, v):

@@ -7,7 +7,6 @@ from telebot.types import Message, Update
 import urllib.parse
 import os
 import json
-from pprint import pprint
 
 router = APIRouter(tags=["bots"])
 
@@ -30,7 +29,6 @@ async def adds_a_bot(bot: Bot, user: UserDB = Depends(fastapi_users.current_user
                 telegram_bot.remove_webhook()
 
                 url = urllib.parse.urljoin(os.getenv("URL"), f"/bots/webhook/{bot.token}")
-                print(url)
                 telegram_bot.set_webhook(url)
 
             bot_list = list(map(lambda x: dict(x), bot_list))
@@ -56,14 +54,12 @@ async def list_current_user__bots(user: UserDB = Depends(fastapi_users.current_u
 
 
 @router.post("/webhook/{token}", status_code=status.HTTP_201_CREATED,
-            responses={
-            })
+             responses={
+             })
 async def endpoint_for_bots(request: Request, token: str):
-
     sas = await request.body()
     decoded = json.loads(sas.decode())
     print("Body: \n" + sas.decode() + "\n")
-
 
     telegram_bot = TeleBot(token)
 
@@ -84,6 +80,11 @@ async def delete_a_bot_by_name_or_token(bot: Bot, user: UserDB = Depends(fastapi
     bot_list = user.bots
 
     if bot in bot_list:
+
+        if os.getenv("HOST_IP") is not None:
+            telegram_bot = TeleBot(bot.token)
+            telegram_bot.remove_webhook()
+
         bot_list.remove(bot)
         bot_list = list(map(lambda x: dict(x), bot_list))
         await user_db.update_one(

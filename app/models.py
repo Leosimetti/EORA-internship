@@ -3,6 +3,7 @@ from bson import ObjectId
 from bson.errors import InvalidId
 from datetime import datetime
 import re
+import requests
 
 
 class OID(str):
@@ -64,7 +65,9 @@ class Bot(MongoModel):
     @validator('token')
     def token_must_be_valid(cls, v):
 
-        #TODO https://api.telegram.org/botYOURTOKEN/getMe
+        response = requests.get(f"https://api.telegram.org/bot{v}/getMe")
+        if not response.json()["ok"]:
+            raise ValueError("Invalid token")
 
         if re.fullmatch(r"^[0-9]{8,10}:[a-zA-Z0-9_-]{35}$", v) is None:
             raise ValueError("Incorrect token format")

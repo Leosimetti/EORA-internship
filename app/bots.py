@@ -25,16 +25,16 @@ async def adds_a_bot(bot: Bot, user: UserDB = Depends(fastapi_users.current_user
             raise HTTPException(status_code=409, detail="The requested bot already exists")
         else:
 
-            telegram_bot = TeleBot(bot.token)
-            telegram_bot.remove_webhook()
+            if os.getenv("HOST_IP") is not None:
+                telegram_bot = TeleBot(bot.token)
+                telegram_bot.remove_webhook()
 
-            url = urllib.parse.urljoin(os.getenv("URL"), f"/bots/webhook/{bot.token}")
-            print(url)
-
-            telegram_bot.set_webhook(url)
+                url = urllib.parse.urljoin(os.getenv("URL"), f"/bots/webhook/{bot.token}")
+                print(url)
+                telegram_bot.set_webhook(url)
 
             bot_list = list(map(lambda x: dict(x), bot_list))
-            bot_list.append(dict(bot))
+            bot_list.append(bot.dict())
             await user_db.update_one(
                 {"id": user.id},
                 {
@@ -58,7 +58,7 @@ async def list_current_user__bots(user: UserDB = Depends(fastapi_users.current_u
 @router.post("/webhook/{token}", status_code=status.HTTP_201_CREATED,
             responses={
             })
-async def list_current_user__bots(request: Request, token: str):
+async def endpoint_for_bots(request: Request, token: str):
 
     sas = await request.body()
     decoded = json.loads(sas.decode())

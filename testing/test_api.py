@@ -82,8 +82,9 @@ class TestConnection(asynctest.TestCase):
 class TestBots(unittest.TestCase):
     from app.db import db
 
-    token = ""
+    authorisation_token = ""
     endpoint = "/bots/"
+    bot_token = "1709125949:AAGp2dAQLVKUJqr6psnxpV7zGExwhIWs4bk"
 
     def setUp(self) -> None:
         self.db.command("dropDatabase")
@@ -102,45 +103,68 @@ class TestBots(unittest.TestCase):
                                    "client_id": "",
                                    "client_secret": ""
                                })
-        self.token = response.json()["access_token"]
+        self.authorisation_token = response.json()["access_token"]
 
     def test_add_one(self):
-        bot = {"name": "CoolBot", "token": "1466"}
+        bot = {"name": "CoolBot", "token": self.bot_token}
 
         response = client.post(self.endpoint,
-                               headers={"Authorization": f"Bearer {self.token}"},
+                               headers={"Authorization": f"Bearer {self.authorisation_token}"},
                                json=bot)
         assert response.status_code == 201, f"{response.status_code} : {response.text}"
 
         response = client.get(self.endpoint,
-                              headers={"Authorization": f"Bearer {self.token}"})
-
+                              headers={"Authorization": f"Bearer {self.authorisation_token}"})
         result = json.loads(response.text)
-        assert len(result) == 1, f"Bots added {len(result)} instead of 1"
+        assert len(result) == 1, f"Added {len(result)} bots instead of 1"
 
+        bot["name"] = bot["name"].lower()
         resulting_bot = result[0]
         assert resulting_bot == bot, f"Expected {bot}, But got {resulting_bot}"
 
+    def test_submit_incorrect_bot_name(self):
+        response = client.post(self.endpoint,
+                               headers={"Authorization": f"Bearer {self.authorisation_token}"},
+                               json={"name": "bot", "token": self.bot_token})
+        assert response.status_code == 422, f"{response.status_code} : {response.text}"
+
+        response = client.post(self.endpoint,
+                               headers={"Authorization": f"Bearer {self.authorisation_token}"},
+                               json={"name": "sassassassassassassassassassassassas", "token": "1466"})
+        assert response.status_code == 422, f"{response.status_code} : {response.text}"
+
+    def test_submit_incorrect_token(self):
+        response = client.post(self.endpoint,
+                               headers={"Authorization": f"Bearer {self.authorisation_token}"},
+                               json={"name": "botyara", "token": "1488"})
+        assert response.status_code == 422, f"{response.status_code} : {response.text}"
+
     def test_duplicate(self):
         client.post(self.endpoint,
-                    headers={"Authorization": f"Bearer {self.token}"},
-                    json={"name": "bot", "token": "1466"})
+                    headers={"Authorization": f"Bearer {self.authorisation_token}"},
+                    json={"name": "botyara", "token": self.bot_token})
         response = client.post(self.endpoint,
-                               headers={"Authorization": f"Bearer {self.token}"},
-                               json={"name": "sas", "token": "1466"})
+                               headers={"Authorization": f"Bearer {self.authorisation_token}"},
+                               json={"name": "botyara", "token": self.bot_token})
 
         assert response.status_code == 409, f"{response.status_code} : {response.text}"
 
     def test_more_than_five(self):
+
+        def new_token(i):
+            temp = list(self.bot_token)
+            temp[11] = str(i)
+            return "".join(temp)
+
         for i in range(5):
             response = client.post(self.endpoint,
-                                   headers={"Authorization": f"Bearer {self.token}"},
-                                   json={"name": f"{i}", "token": f"{i}"})
+                                   headers={"Authorization": f"Bearer {self.authorisation_token}"},
+                                   json={"name": f"botyara{i}", "token": new_token(i)})
             assert response.status_code == 201, f"{response.status_code} : {response.text}"
 
         response = client.post(self.endpoint,
-                               headers={"Authorization": f"Bearer {self.token}"},
-                               json={"name": "aboba", "token": "1222"})
+                               headers={"Authorization": f"Bearer {self.authorisation_token}"},
+                               json={"name": "abobus", "token": self.bot_token})
         assert response.status_code == 403, f"{response.status_code} : {response.text}"
 
     def tearDown(self) -> None:

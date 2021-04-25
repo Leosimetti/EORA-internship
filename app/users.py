@@ -17,7 +17,7 @@ class User(models.BaseUser):
     class Config(BaseConfig):
         allow_population_by_field_name = True
         json_encoders = {
-            Bot: lambda b: json.dumps({"name": b.name, "token": b.token}),
+            Bot: lambda b: json.dumps({"name": b.name, "token": b.authorisation_token}),
         }
 
     bots: List[Bot] = []

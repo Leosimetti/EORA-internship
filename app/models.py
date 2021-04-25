@@ -63,14 +63,14 @@ class Bot(MongoModel):
             raise ValueError("Name to long")
         return v.lower()
 
-    # @validator('token')
-    # def token_must_be_valid(cls, v):
-    #
-    #     #TODO https://api.telegram.org/botYOURTOKEN/getMe
-    #
-    #     if re.fullmatch(r"^[0-9]{8,10}:[a-zA-Z0-9_-]{35}$", v) is None:
-    #         raise ValueError("Incorrect token format")
-    #     return v
+    @validator('token')
+    def token_must_be_valid(cls, v):
+
+        #TODO https://api.telegram.org/botYOURTOKEN/getMe
+
+        if re.fullmatch(r"^[0-9]{8,10}:[a-zA-Z0-9_-]{35}$", v) is None:
+            raise ValueError("Incorrect token format")
+        return v
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):

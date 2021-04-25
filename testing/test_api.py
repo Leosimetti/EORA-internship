@@ -62,3 +62,29 @@ def test_more_than_five(client, authorization_token):
                            headers={"Authorization": f"Bearer {authorization_token}"},
                            json={"label": "abobus", "token": bot_token})
     assert response.status_code == 403, f"{response.status_code} : {response.text}"
+
+
+def test_delete(client, authorization_token):
+    def new_token(i):
+        temp = list(bot_token)
+        temp[11] = str(i)
+        return "".join(temp)
+
+    for i in range(5):
+        response = client.post(endpoint,
+                               headers={"Authorization": f"Bearer {authorization_token}"},
+                               json={"label": f"botyara{i}", "token": new_token(i)})
+        assert response.status_code == 201, f"{response.status_code} : {response.text}"
+
+    for i in range(5):
+        response = client.delete(endpoint,
+                                 headers={"Authorization": f"Bearer {authorization_token}"},
+                                 json={"label": f"botyara{i}"})
+        assert response.status_code == 201, f"{response.status_code} : {response.text}"
+
+
+def test_wrong_delete(client, authorization_token):
+    response = client.delete(endpoint,
+                             headers={"Authorization": f"Bearer {authorization_token}"},
+                             json={"label": f"botyara", "token": bot_token})
+    assert response.status_code == 404, f"{response.status_code} : {response.text}"

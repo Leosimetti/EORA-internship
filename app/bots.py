@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, status, HTTPException, Request
 from .users import UserDB, fastapi_users
 from .users import collection as user_db
-from .models import Bot
+from .models import Bot, BotFind
 from telebot import TeleBot
 from pydantic.types import UUID4
 from telebot.types import Message, Update
@@ -84,10 +84,14 @@ async def endpoint_for_bots(request: Request, userid: UUID4, token: str):
                responses={
                    404: {"description": "The requested bot does not exist"},
                })
-async def delete_a_bot_by_name_or_token(bot: Bot, user: UserDB = Depends(fastapi_users.current_user(active=True))):
+async def delete_a_bot_by_name_or_token(bot: BotFind, user: UserDB = Depends(fastapi_users.current_user(active=True))):
+    label = bot.label
     bot_list = user.bots
+    bot_labels = list(map(lambda x: x.label, bot_list))
 
-    if bot in bot_list:
+    if label in bot_labels:
+        idx = bot_labels.index(label)
+        bot = bot_list[idx]
 
         if os.getenv("HOST_IP") is not None:
             telegram_bot = TeleBot(bot.token)

@@ -9,6 +9,16 @@ class RegisterUser(BaseModel):
     password: str
 
 
+class BotFind(BaseModel):
+    label: str
+
+    @validator('label')
+    def name_must_be_sufficient_length(cls, v):
+        if len(v) > 55:
+            raise ValueError("Label to long")
+        return v
+
+
 class Bot(BaseModel):
     label: str
     token: str

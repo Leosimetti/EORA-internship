@@ -26,7 +26,7 @@ async def adds_a_bot(bot: Bot, user: UserDB = Depends(fastapi_users.current_user
             telegram_bot = TeleBot(bot.token)
             telegram_bot.remove_webhook()
 
-            url = urllib.parse.urljoin(os.getenv("URL"), f"/webhook/{bot.token}")
+            url = urllib.parse.urljoin(os.getenv("URL"), f"/bots/webhook/{bot.token}")
             print(url)
 
             telegram_bot.set_webhook(url)
@@ -56,7 +56,7 @@ async def list_current_user__bots(user: UserDB = Depends(fastapi_users.current_u
 @router.post("/webhook/{token}", status_code=status.HTTP_201_CREATED,
             responses={
             })
-async def list_current_user__bots(request: Request, token: str, user: UserDB = Depends(fastapi_users.current_user(active=True))):
+async def list_current_user__bots(request: Request, token: str):
 
     sas = await request.body()
     print("Body: \n" + sas.decode() + "\n")

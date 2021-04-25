@@ -21,6 +21,13 @@ def app():
     yield create_app()
 
 
+@pytest.fixture(scope="function")
+def temp_client(app):
+    db.command("dropDatabase")
+    yield TestClient(app)
+    db.command("dropDatabase")
+
+
 @pytest.fixture(scope="module")
 def client(app):
     yield TestClient(app)
@@ -30,20 +37,20 @@ def client(app):
 def authorization_token(client):
     db.command("dropDatabase")
     client.post("/auth/register",
-                      json={
-                          "email": "user@example.com",
-                          "password": "string",
-                      })
+                json={
+                    "email": "user@example.com",
+                    "password": "string",
+                })
 
     response = client.post("/auth/jwt/login",
-                                 data={
-                                     "username": "user@example.com",
-                                     "password": "string",
-                                     "grant_type": "",
-                                     "scope": "",
-                                     "client_id": "",
-                                     "client_secret": ""
-                                 })
+                           data={
+                               "username": "user@example.com",
+                               "password": "string",
+                               "grant_type": "",
+                               "scope": "",
+                               "client_id": "",
+                               "client_secret": ""
+                           })
 
     yield response.json()["access_token"]
 

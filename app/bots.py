@@ -49,7 +49,7 @@ async def list_current_user__bots(user: UserDB = Depends(fastapi_users.current_u
     return user.bots
 
 
-@router.get("/webhook/{token}", status_code=status.HTTP_201_CREATED,
+@router.post("/webhook/{token}", status_code=status.HTTP_201_CREATED,
             responses={
             })
 async def list_current_user__bots(request: Request, token: str, user: UserDB = Depends(fastapi_users.current_user(active=True))):

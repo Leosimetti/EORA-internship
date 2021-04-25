@@ -83,9 +83,7 @@ class TestBots(unittest.TestCase):
     from app.db import db
 
     token = ""
-    prefix = "/bots"
-    add_endpoint = prefix + "/add"
-    list_endpoit = prefix + "/list"
+    endpoint = "/bots/"
 
     def setUp(self) -> None:
         self.db.command("dropDatabase")
@@ -109,25 +107,25 @@ class TestBots(unittest.TestCase):
     def test_add_one(self):
         bot = {"name": "CoolBot", "token": "1466"}
 
-        response = client.post(self.add_endpoint,
+        response = client.post(self.endpoint,
                                headers={"Authorization": f"Bearer {self.token}"},
                                json=bot)
         assert response.status_code == 201, f"{response.status_code} : {response.text}"
 
-        response = client.post(self.list_endpoit,
-                               headers={"Authorization": f"Bearer {self.token}"})
+        response = client.get(self.endpoint,
+                              headers={"Authorization": f"Bearer {self.token}"})
 
         result = json.loads(response.text)
-        assert len(result) == 1,f"Bots added {len(result)} instead of 1"
+        assert len(result) == 1, f"Bots added {len(result)} instead of 1"
 
         resulting_bot = result[0]
         assert resulting_bot == bot, f"Expected {bot}, But got {resulting_bot}"
 
     def test_duplicate(self):
-        client.post(self.add_endpoint,
+        client.post(self.endpoint,
                     headers={"Authorization": f"Bearer {self.token}"},
                     json={"name": "bot", "token": "1466"})
-        response = client.post(self.add_endpoint,
+        response = client.post(self.endpoint,
                                headers={"Authorization": f"Bearer {self.token}"},
                                json={"name": "sas", "token": "1466"})
 
@@ -135,12 +133,12 @@ class TestBots(unittest.TestCase):
 
     def test_more_than_five(self):
         for i in range(5):
-            response = client.post(self.add_endpoint,
+            response = client.post(self.endpoint,
                                    headers={"Authorization": f"Bearer {self.token}"},
                                    json={"name": f"{i}", "token": f"{i}"})
             assert response.status_code == 201, f"{response.status_code} : {response.text}"
 
-        response = client.post(self.add_endpoint,
+        response = client.post(self.endpoint,
                                headers={"Authorization": f"Bearer {self.token}"},
                                json={"name": "aboba", "token": "1222"})
         assert response.status_code == 403, f"{response.status_code} : {response.text}"

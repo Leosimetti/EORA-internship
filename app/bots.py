@@ -6,7 +6,7 @@ from .models import Bot
 router = APIRouter(tags=["bots"])
 
 
-@router.post("/add", status_code=status.HTTP_201_CREATED,
+@router.post("/", status_code=status.HTTP_201_CREATED,
              responses={
                  403: {"description": "You already have more than 5 bots"},
                  409: {"description": "The requested bot already exists"}
@@ -33,8 +33,32 @@ async def adds_a_bot(bot: Bot, user: UserDB = Depends(fastapi_users.current_user
         raise HTTPException(status_code=403, detail="You already have more than 5 bots")
 
 
-@router.post("/list", status_code=status.HTTP_201_CREATED,
-             responses={
-             })
+@router.get("/", status_code=status.HTTP_201_CREATED,
+            responses={
+            })
 async def list_current_user__bots(user: UserDB = Depends(fastapi_users.current_user(active=True))):
     return user.bots
+
+
+@router.delete("/", status_code=status.HTTP_201_CREATED,
+               responses={
+                   404: {"description": "The requested bot does not exist"},
+               })
+async def delete_a_bot_by_name_or_token(bot: Bot, user: UserDB = Depends(fastapi_users.current_user(active=True))):
+    bot_list = user.bots
+
+    if bot in bot_list:
+        bot_list.remove(bot)
+        bot_list = list(map(lambda x: dict(x), bot_list))
+        await user_db.update_one(
+            {"id": user.id},
+            {
+                "$set": {
+                    "bots": bot_list,
+                }
+            }
+        )
+        return bot_list
+    else:
+        raise HTTPException(status_code=404, detail="The requested bot does not exist")
+

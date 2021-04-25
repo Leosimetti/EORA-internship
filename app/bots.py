@@ -25,7 +25,11 @@ async def adds_a_bot(bot: Bot, user: UserDB = Depends(fastapi_users.current_user
 
             telegram_bot = TeleBot(bot.token)
             telegram_bot.remove_webhook()
-            telegram_bot.set_webhook(urllib.parse.urljoin(os.getenv("URL"), f"/webhook/{bot.token}"))
+
+            url = urllib.parse.urljoin(os.getenv("URL"), f"/webhook/{bot.token}")
+            print(url)
+
+            telegram_bot.set_webhook(url)
 
             bot_list = list(map(lambda x: dict(x), bot_list))
             bot_list.append(dict(bot))

@@ -1,7 +1,11 @@
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status, HTTPException, Request
 from .users import UserDB, fastapi_users
 from .users import collection as user_db
 from .models import Bot
+from telebot import TeleBot
+import urllib.parse
+import os
+from pprint import pprint
 
 router = APIRouter(tags=["bots"])
 
@@ -18,6 +22,11 @@ async def adds_a_bot(bot: Bot, user: UserDB = Depends(fastapi_users.current_user
         if bot in bot_list:
             raise HTTPException(status_code=409, detail="The requested bot already exists")
         else:
+
+            telegram_bot = TeleBot(bot.token)
+            telegram_bot.remove_webhook()
+            telegram_bot.set_webhook(urllib.parse.urljoin(os.getenv("URL"), f"/webhook/{bot.token}"))
+
             bot_list = list(map(lambda x: dict(x), bot_list))
             bot_list.append(dict(bot))
             await user_db.update_one(
@@ -38,6 +47,21 @@ async def adds_a_bot(bot: Bot, user: UserDB = Depends(fastapi_users.current_user
             })
 async def list_current_user__bots(user: UserDB = Depends(fastapi_users.current_user(active=True))):
     return user.bots
+
+
+@router.get("/webhook/{token}", status_code=status.HTTP_201_CREATED,
+            responses={
+            })
+async def list_current_user__bots(request: Request, token: str, user: UserDB = Depends(fastapi_users.current_user(active=True))):
+
+    sas = await request.body()
+    print("Body: \n" + sas.decode() + "\n")
+
+    telegram_bot = TeleBot(token)
+    telegram_bot.remove_webhook()
+    telegram_bot.set_webhook(urllib.parse.urljoin(os.getenv("URL"), f"/webhook/{token}"))
+
+    return sas.decode()
 
 
 @router.delete("/", status_code=status.HTTP_201_CREATED,
@@ -61,4 +85,3 @@ async def delete_a_bot_by_name_or_token(bot: Bot, user: UserDB = Depends(fastapi
         return bot_list
     else:
         raise HTTPException(status_code=404, detail="The requested bot does not exist")
-

@@ -5,7 +5,6 @@ from .users import  router   as users_router
 from .bots  import  router   as bot_router
 from fastapi.middleware.cors import CORSMiddleware
 
-
 app = FastAPI()
 app.include_router(users_router)
 app.include_router(bot_router, prefix="/bots")

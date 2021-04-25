@@ -8,7 +8,7 @@ services:
     environment:
       DB_HOST: "mongo"
       HOST_IP: "0.0.0.0"
-      PORT:    "80"
+      PORT:    "5000"
     depends_on:
       - mongo
     ports:

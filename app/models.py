@@ -1,7 +1,8 @@
-from pydantic import BaseModel, BaseConfig
+from pydantic import BaseModel, BaseConfig, ValidationError, validator
 from bson import ObjectId
 from bson.errors import InvalidId
 from datetime import datetime
+
 
 class OID(str):
     @classmethod
@@ -53,9 +54,16 @@ class Bot(MongoModel):
     name: str
     token: str
 
+    @validator('name')
+    def name_must_be_sufficient_length(cls, v):
+        if len(v) < 5:
+            raise ValueError('Name too short')
+        elif len(v) > 35:
+            raise ValueError("Name to long")
+        return v.lower()
+
     def __eq__(self, other):
         if isinstance(other, self.__class__):
             return other.name == self.name or other.token == self.token
         else:
             return False
-

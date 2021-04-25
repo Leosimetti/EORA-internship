@@ -3,6 +3,7 @@ from .users import UserDB, fastapi_users
 from .users import collection as user_db
 from .models import Bot
 from telebot import TeleBot
+from pydantic.types import UUID4
 from telebot.types import Message, Update
 import urllib.parse
 import os
@@ -23,12 +24,11 @@ async def adds_a_bot(bot: Bot, user: UserDB = Depends(fastapi_users.current_user
         if bot in bot_list:
             raise HTTPException(status_code=409, detail="The requested bot already exists")
         else:
-
             if os.getenv("HOST_IP") is not None:
                 telegram_bot = TeleBot(bot.token)
                 telegram_bot.remove_webhook()
 
-                url = urllib.parse.urljoin(os.getenv("URL"), f"/bots/webhook/{bot.token}")
+                url = urllib.parse.urljoin(os.getenv("URL"), f"/bots/webhook/{user.id}/{bot.token}")
                 telegram_bot.set_webhook(url)
 
             bot_list = list(map(lambda x: dict(x), bot_list))
@@ -43,7 +43,7 @@ async def adds_a_bot(bot: Bot, user: UserDB = Depends(fastapi_users.current_user
             )
             return bot_list
     else:
-        raise HTTPException(status_code=403, detail="You already have more than 5 bots")
+        raise HTTPException(status_code=403, detail="You cannot have more than 5 bots")
 
 
 @router.get("/", status_code=status.HTTP_201_CREATED,
@@ -53,23 +53,30 @@ async def list_current_user__bots(user: UserDB = Depends(fastapi_users.current_u
     return user.bots
 
 
-@router.post("/webhook/{token}", status_code=status.HTTP_201_CREATED,
+@router.post("/webhook/{userid}/{token}", status_code=status.HTTP_201_CREATED,
              responses={
              })
-async def endpoint_for_bots(request: Request, token: str):
-    sas = await request.body()
-    decoded = json.loads(sas.decode())
-    print("Body: \n" + sas.decode() + "\n")
+async def endpoint_for_bots(request: Request, userid: UUID4, token: str):
+    user = await user_db.find_one(
+        {"id": f"{userid}"}
+    )
+    user_tokens = map(lambda x: x[1], user.bots)
 
-    telegram_bot = TeleBot(token)
+    if user and (token in user_tokens):
+        sas = await request.body()
+        decoded = json.loads(sas.decode())
 
-    @telegram_bot.message_handler()
-    def echo(m: Message):
-        telegram_bot.send_message(m.chat.id, m.text)
+        telegram_bot = TeleBot(token)
 
-    telegram_bot.process_new_updates([Update.de_json(decoded)])
+        @telegram_bot.message_handler()
+        def echo(m: Message):
+            telegram_bot.send_message(m.chat.id, m.text)
 
-    return sas.decode()
+        telegram_bot.process_new_updates([Update.de_json(decoded)])
+
+        return sas.decode()
+    else:
+        raise HTTPException(status_code=403, detail="This bot is not allowed here!")
 
 
 @router.delete("/", status_code=status.HTTP_201_CREATED,

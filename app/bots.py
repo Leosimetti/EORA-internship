@@ -3,6 +3,7 @@ from .users import UserDB, fastapi_users
 from .users import collection as user_db
 from .models import Bot
 from telebot import TeleBot
+from telebot.types import Message, Update
 import urllib.parse
 import os
 import json
@@ -63,8 +64,14 @@ async def list_current_user__bots(request: Request, token: str):
     decoded = json.loads(sas.decode())
     print("Body: \n" + sas.decode() + "\n")
 
+
     telegram_bot = TeleBot(token)
-    telegram_bot.send_message(decoded["chat"]["id"], decoded["text"])
+
+    @telegram_bot.message_handler()
+    def echo(m: Message):
+        telegram_bot.send_message(m.chat.id, m.text)
+
+    telegram_bot.process_new_updates([Update.de_json(decoded)])
 
     return sas.decode()
 

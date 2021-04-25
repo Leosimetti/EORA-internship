@@ -57,9 +57,7 @@ class Bot(MongoModel):
 
     @validator('label')
     def name_must_be_sufficient_length(cls, v):
-        if len(v) < 2:
-            raise ValueError('Label too short')
-        elif len(v) > 55:
+        if len(v) > 55:
             raise ValueError("Label to long")
         return v
 
@@ -74,6 +72,6 @@ class Bot(MongoModel):
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
-            return other.name == self.name or other.token == self.token
+            return other.label == self.label or other.token == self.token
         else:
             return False

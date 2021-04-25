@@ -5,7 +5,7 @@ bot_token = "1709125949:AAGp2dAQLVKUJqr6psnxpV7zGExwhIWs4bk"
 
 
 def test_add_one(client, authorization_token):
-    bot = {"name": "CoolBot", "token": bot_token}
+    bot = {"label": "CoolBot", "token": bot_token}
 
     response = client.post(endpoint,
                            headers={"Authorization": f"Bearer {authorization_token}"},
@@ -17,7 +17,6 @@ def test_add_one(client, authorization_token):
     result = json.loads(response.text)
     assert len(result) == 1, f"Added {len(result)} bots instead of 1"
 
-    bot["name"] = bot["name"].lower()
     resulting_bot = result[0]
     assert resulting_bot == bot, f"Expected {bot}, But got {resulting_bot}"
 
@@ -25,29 +24,24 @@ def test_add_one(client, authorization_token):
 def test_submit_incorrect_bot_name(client, authorization_token):
     response = client.post(endpoint,
                            headers={"Authorization": f"Bearer {authorization_token}"},
-                           json={"name": "bot", "token": bot_token})
-    assert response.status_code == 422, f"{response.status_code} : {response.text}"
-
-    response = client.post(endpoint,
-                           headers={"Authorization": f"Bearer {authorization_token}"},
-                           json={"name": "sassassassassassassassassassassassas", "token": "1466"})
+                           json={"label": "sassassassassassassassassassassassas", "token": "1466"})
     assert response.status_code == 422, f"{response.status_code} : {response.text}"
 
 
 def test_submit_incorrect_token(client, authorization_token):
     response = client.post(endpoint,
                            headers={"Authorization": f"Bearer {authorization_token}"},
-                           json={"name": "botyara", "token": "1488"})
+                           json={"label": "botyara", "token": "1488"})
     assert response.status_code == 422, f"{response.status_code} : {response.text}"
 
 
 def test_duplicate(client, authorization_token):
     client.post(endpoint,
                 headers={"Authorization": f"Bearer {authorization_token}"},
-                json={"name": "botyara", "token": bot_token})
+                json={"label": "botyara", "token": bot_token})
     response = client.post(endpoint,
                            headers={"Authorization": f"Bearer {authorization_token}"},
-                           json={"name": "botyara", "token": bot_token})
+                           json={"label": "botyara", "token": bot_token})
 
     assert response.status_code == 409, f"{response.status_code} : {response.text}"
 
@@ -61,10 +55,10 @@ def test_more_than_five(client, authorization_token):
     for i in range(5):
         response = client.post(endpoint,
                                headers={"Authorization": f"Bearer {authorization_token}"},
-                               json={"name": f"botyara{i}", "token": new_token(i)})
+                               json={"label": f"botyara{i}", "token": new_token(i)})
         assert response.status_code == 201, f"{response.status_code} : {response.text}"
 
     response = client.post(endpoint,
                            headers={"Authorization": f"Bearer {authorization_token}"},
-                           json={"name": "abobus", "token": bot_token})
+                           json={"label": "abobus", "token": bot_token})
     assert response.status_code == 403, f"{response.status_code} : {response.text}"

@@ -14,10 +14,11 @@ router = APIRouter(tags=["bots"])
 
 @router.post("/", status_code=status.HTTP_201_CREATED,
              responses={
+                 402: {"description": "You are not verified!"},
                  403: {"description": "You already have more than 5 bots"},
-                 409: {"description": "The requested bot already exists"}
+                 409: {"description": "The requested bot already exists"},
              })
-async def adds_a_bot(bot: Bot, user: UserDB = Depends(fastapi_users.current_user(active=True))):
+async def adds_a_bot(bot: Bot, user: UserDB = Depends(fastapi_users.current_user(verified=True))):
     bot_list = user.bots
 
     if len(bot_list) < 5:
@@ -55,7 +56,8 @@ async def list_current_user__bots(user: UserDB = Depends(fastapi_users.current_u
 
 @router.post("/webhook/{userid}/{token}", status_code=status.HTTP_201_CREATED,
              responses={
-                 403: {"description": "This bot is not allowed here!"}
+                 402: {"description": "You are not verified."},
+                 403: {"description": "This bot is not allowed here!"},
              })
 async def endpoint_for_bots(request: Request, userid: UUID4, token: str):
     user = await user_db.find_one(
@@ -82,9 +84,10 @@ async def endpoint_for_bots(request: Request, userid: UUID4, token: str):
 
 @router.delete("/", status_code=status.HTTP_201_CREATED,
                responses={
+                   402: {"description": "You are not verified."},
                    404: {"description": "The requested bot does not exist"},
                })
-async def delete_a_bot_by_name_or_token(bot: BotFind, user: UserDB = Depends(fastapi_users.current_user(active=True))):
+async def delete_a_bot_by_label(bot: BotFind, user: UserDB = Depends(fastapi_users.current_user(verified=True))):
     label = bot.label
     bot_list = user.bots
     bot_labels = list(map(lambda x: x.label, bot_list))

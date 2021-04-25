@@ -85,3 +85,20 @@ router.include_router(
     prefix="/auth",
     tags=["auth"],
 )
+
+from fastapi import Depends, status
+
+
+@router.post("/cheat-verify", status_code=status.HTTP_201_CREATED,
+             responses={
+             })
+async def in_reality_it_should_be_done_via_email(user: UserDB = Depends(fastapi_users.current_user(active=True))):
+    await collection.update_one(
+        {"id": user.id},
+        {
+            "$set": {
+                "is_verified": True,
+            }
+        }
+    )
+    return user

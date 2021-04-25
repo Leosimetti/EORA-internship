@@ -51,7 +51,9 @@ def authorization_token(client):
                                "client_id": "",
                                "client_secret": ""
                            })
-
-    yield response.json()["access_token"]
+    token = response.json()["access_token"]
+    client.post("/cheat-verify",
+                headers={"Authorization": f"Bearer {token}"}, )
+    yield token
 
     db.command("dropDatabase")

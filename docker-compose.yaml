@@ -22,7 +22,7 @@ services:
 
   mongo-express:
     image: mongo-express
-    container_name: mongo-express
+    container_name: mongo-exprass
     environment:
       ME_CONFIG_MONGODB_SERVER: "mongo"
     depends_on:

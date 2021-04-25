@@ -55,14 +55,15 @@ async def list_current_user__bots(user: UserDB = Depends(fastapi_users.current_u
 
 @router.post("/webhook/{userid}/{token}", status_code=status.HTTP_201_CREATED,
              responses={
+                 403: {"description": "This bot is not allowed here!"}
              })
 async def endpoint_for_bots(request: Request, userid: UUID4, token: str):
     user = await user_db.find_one(
-        {"id": f"{userid}"}
+        {"id": UUID4(f"{userid}".replace("-", ""))}
     )
-    user_tokens = map(lambda x: x[1], user.bots)
+    user_tokens = lambda: list(map(lambda x: x["token"], user["bots"]))
 
-    if user and (token in user_tokens):
+    if (user is not None) and (token in user_tokens()):
         sas = await request.body()
         decoded = json.loads(sas.decode())
 

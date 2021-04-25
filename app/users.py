@@ -3,6 +3,7 @@ from fastapi_users import FastAPIUsers, models
 from fastapi_users.authentication import JWTAuthentication
 from fastapi_users.db import MongoDBUserDatabase
 from fastapi_users.authentication import CookieAuthentication
+from pydantic import EmailStr
 from typing import List
 from .models import Bot
 from .db import db
@@ -16,8 +17,9 @@ class User(models.BaseUser):
     bots: List[Bot] = []
 
 
-class UserCreate(models.BaseUserCreate):
-    pass
+class UserCreate(models.CreateUpdateDictModel):
+    email: EmailStr
+    password: str
 
 
 class UserUpdate(User, models.BaseUserUpdate):

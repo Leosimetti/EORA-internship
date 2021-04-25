@@ -1,30 +1,23 @@
 from fastapi import APIRouter, Request
 from fastapi_users import FastAPIUsers, models
-from pydantic import BaseConfig
 from fastapi_users.authentication import JWTAuthentication
 from fastapi_users.db import MongoDBUserDatabase
 from fastapi_users.authentication import CookieAuthentication
-from typing import List, Optional
+from typing import List
 from .models import Bot
 from .db import db
 
-import json
+import os
 
-SECRET = "VERY133331235VERYsdad211SECRETPHRASENOONEKNOWS"
+SECRET = os.getenv("SECRET", "VERY133331235VERYsdad211SECRETPHRASENOONEKNOWS")
 
 
 class User(models.BaseUser):
-    class Config(BaseConfig):
-        allow_population_by_field_name = True
-        json_encoders = {
-            Bot: lambda b: json.dumps({"name": b.name, "token": b.authorisation_token}),
-        }
-
     bots: List[Bot] = []
 
 
 class UserCreate(models.BaseUserCreate):
-    is_superuser: Optional[str] = None
+    pass
 
 
 class UserUpdate(User, models.BaseUserUpdate):
@@ -90,5 +83,3 @@ router.include_router(
     prefix="/auth",
     tags=["auth"],
 )
-
-router.include_router(fastapi_users.get_users_router(), prefix="/users", tags=["users"])

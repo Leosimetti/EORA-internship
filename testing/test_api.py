@@ -6,6 +6,7 @@ import sys
 from fastapi.testclient import TestClient
 from app.app import app
 import os
+import json
 
 # create logger
 logger = logging.getLogger(__name__)
@@ -82,7 +83,9 @@ class TestBots(unittest.TestCase):
     from app.db import db
 
     token = ""
-    add_endpoint = "/add-bot"
+    prefix = "/bots"
+    add_endpoint = prefix + "/add"
+    list_endpoit = prefix + "/list"
 
     def setUp(self) -> None:
         self.db.command("dropDatabase")
@@ -104,31 +107,43 @@ class TestBots(unittest.TestCase):
         self.token = response.json()["access_token"]
 
     def test_add_one(self):
+        bot = {"name": "CoolBot", "token": "1466"}
+
         response = client.post(self.add_endpoint,
                                headers={"Authorization": f"Bearer {self.token}"},
-                               json={"name": "CoolBot", "token": "1466"})
-        assert response.status_code == 201
+                               json=bot)
+        assert response.status_code == 201, f"{response.status_code} : {response.text}"
+
+        response = client.post(self.list_endpoit,
+                               headers={"Authorization": f"Bearer {self.token}"})
+
+        result = json.loads(response.text)
+        assert len(result) == 1,f"Bots added {len(result)} instead of 1"
+
+        resulting_bot = result[0]
+        assert resulting_bot == bot, f"Expected {bot}, But got {resulting_bot}"
 
     def test_duplicate(self):
         client.post(self.add_endpoint,
                     headers={"Authorization": f"Bearer {self.token}"},
                     json={"name": "bot", "token": "1466"})
-        response = client.post("/add-bot",
+        response = client.post(self.add_endpoint,
                                headers={"Authorization": f"Bearer {self.token}"},
                                json={"name": "sas", "token": "1466"})
-        assert response.status_code == 409
+
+        assert response.status_code == 409, f"{response.status_code} : {response.text}"
 
     def test_more_than_five(self):
         for i in range(5):
             response = client.post(self.add_endpoint,
                                    headers={"Authorization": f"Bearer {self.token}"},
                                    json={"name": f"{i}", "token": f"{i}"})
-            assert response.status_code == 201
+            assert response.status_code == 201, f"{response.status_code} : {response.text}"
 
         response = client.post(self.add_endpoint,
                                headers={"Authorization": f"Bearer {self.token}"},
                                json={"name": "aboba", "token": "1222"})
-        assert response.status_code == 403
+        assert response.status_code == 403, f"{response.status_code} : {response.text}"
 
     def tearDown(self) -> None:
         self.db.command("dropDatabase")

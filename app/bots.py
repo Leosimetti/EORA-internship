@@ -5,6 +5,7 @@ from .models import Bot
 from telebot import TeleBot
 import urllib.parse
 import os
+import json
 from pprint import pprint
 
 router = APIRouter(tags=["bots"])
@@ -59,11 +60,11 @@ async def list_current_user__bots(user: UserDB = Depends(fastapi_users.current_u
 async def list_current_user__bots(request: Request, token: str):
 
     sas = await request.body()
+    decoded = json.loads(sas.decode())
     print("Body: \n" + sas.decode() + "\n")
 
     telegram_bot = TeleBot(token)
-    telegram_bot.remove_webhook()
-    telegram_bot.set_webhook(urllib.parse.urljoin(os.getenv("URL"), f"/webhook/{token}"))
+    telegram_bot.send_message(decoded["chat"]["id"], decoded["text"])
 
     return sas.decode()
 

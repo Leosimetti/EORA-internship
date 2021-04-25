@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 app.include_router(users_router)
-app.include_router(bot_router)
+app.include_router(bot_router, prefix="/bot")
 
 origins = []
 #     "http://127.0.0.1",

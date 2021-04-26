@@ -12,7 +12,7 @@ import json
 router = APIRouter(tags=["bots"])
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED,
+@router.post("", status_code=status.HTTP_201_CREATED,
              responses={
                  402: {"description": "You are not verified!"},
                  403: {"description": "You already have more than 5 bots"},
@@ -47,7 +47,7 @@ async def adds_a_bot(bot: Bot, user: UserDB = Depends(fastapi_users.current_user
         raise HTTPException(status_code=403, detail="You cannot have more than 5 bots")
 
 
-@router.get("/", status_code=status.HTTP_201_CREATED,
+@router.get("", status_code=status.HTTP_201_CREATED,
             responses={
             })
 async def list_current_user__bots(user: UserDB = Depends(fastapi_users.current_user(active=True))):
@@ -82,7 +82,7 @@ async def endpoint_for_bots(request: Request, userid: UUID4, token: str):
         raise HTTPException(status_code=403, detail="This bot is not allowed here!")
 
 
-@router.delete("/", status_code=status.HTTP_201_CREATED,
+@router.delete("", status_code=status.HTTP_201_CREATED,
                responses={
                    402: {"description": "You are not verified."},
                    404: {"description": "The requested bot does not exist"},

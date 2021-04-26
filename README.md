@@ -1,5 +1,15 @@
-## EORA-internship
+# EORA-internship
 Test task for the EORA-internship in the form of a Telegram-bot management system.
+
+## Workflow that is available in the documantation
+
+1. Register at the `POST /auth/register`
+2. Login at the `POST /auth/cookie/login` so that you get a cookie from the website
+3. Get verified at `POST /cheat-verify` (It can be done the long way as well)
+4. Add some bots at `POST /bots`
+5. The bots work
+6. ???
+
 
 ## How to deploy on your PC
 Since there is a DockerFile for the server - deploying it along with the database is as simple as executing command in the project root

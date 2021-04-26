@@ -1,6 +1,6 @@
 import json
 
-endpoint = "/bots/"
+endpoint = "/bots"
 bot_token = "1709125949:AAGp2dAQLVKUJqr6psnxpV7zGExwhIWs4bk"
 
 

@@ -101,4 +101,4 @@ async def in_reality_it_should_be_done_via_email(user: UserDB = Depends(fastapi_
             }
         }
     )
-    return user
+    return user.is_verified
